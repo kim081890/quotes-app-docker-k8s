@@ -4,9 +4,6 @@ metadata:
   name: data
   labels:
     app: data
-    app.kubernetes.io/name: quotes-app
-    app.kubernetes.io/component: database
-    app.kubernetes.io/version: "5.7"
 spec:
   replicas: 1
   selector:
@@ -16,9 +13,14 @@ spec:
     metadata:
       labels:
         app: data
-        app.kubernetes.io/name: quotes-app
-        app.kubernetes.io/component: database
     spec:
+      initContainers:
+        - name: init-mysql-data
+          image: busybox
+          command: ["sh", "-c", "rm -rf /var/lib/mysql/*"]
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
       containers:
         - name: data
           image: mysql:5.7
