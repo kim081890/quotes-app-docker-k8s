@@ -222,3 +222,4 @@ Thumbs.db
 .env
 .env.production
 
+*.zip
