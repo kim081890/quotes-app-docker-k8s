@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data
+  labels:
+    app: data
+    app.kubernetes.io/name: quotes-app
+    app.kubernetes.io/component: database
+    app.kubernetes.io/version: "5.7"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data
+  template:
+    metadata:
+      labels:
+        app: data
+        app.kubernetes.io/name: quotes-app
+        app.kubernetes.io/component: database
+    spec:
+      containers:
+        - name: data
+          image: mysql:5.7
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_DATABASE
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_ALLOW_EMPTY_PASSWORD
+              value: "yes"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-storage
+          persistentVolumeClaim:
+            claimName: mysql-pvc

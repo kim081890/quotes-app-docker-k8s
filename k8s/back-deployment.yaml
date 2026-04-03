@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: back
+  labels:
+    app: back
+    app.kubernetes.io/name: quotes-app
+    app.kubernetes.io/component: api
+    app.kubernetes.io/version: "v2"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: back
+  template:
+    metadata:
+      labels:
+        app: back
+        app.kubernetes.io/name: quotes-app
+        app.kubernetes.io/component: api
+    spec:
+      containers:
+        - name: back
+          image: kim081890/quotes-back:v2
+          ports:
+            - containerPort: 3000
+          env:
+            - name: SQLALCHEMY_DATABASE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: SQLALCHEMY_DATABASE_URI
+
+          # "Is this container still alive?"
+          # If /healthz fails 3x, K8s kills and restarts the container.
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          # "Is this container ready for traffic?"
+          # Until /healthz returns 200, K8s won't route requests here.
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

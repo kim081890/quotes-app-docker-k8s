@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: front
+  labels:
+    app: front
+    app.kubernetes.io/name: quotes-app
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/version: "v1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: front
+  template:
+    metadata:
+      labels:
+        app: front
+        app.kubernetes.io/name: quotes-app
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: front
+          image: kim081890/quotes-front:v1
+          ports:
+            - containerPort: 3001
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"

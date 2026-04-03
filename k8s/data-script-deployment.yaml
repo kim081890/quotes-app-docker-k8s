@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: data-script
+  labels:
+    app: data-script
+    app.kubernetes.io/name: quotes-app
+    app.kubernetes.io/component: db-seeder
+    app.kubernetes.io/version: "v2"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: data-script
+  template:
+    metadata:
+      labels:
+        app: data-script
+        app.kubernetes.io/name: quotes-app
+        app.kubernetes.io/component: db-seeder
+    spec:
+      # ─── Init Container: waits for MySQL to be ready ───
+      initContainers:
+        - name: wait-for-db
+          image: mysql:5.7
+          command:
+            - sh
+            - -c
+            - "until mysql -h ${MYSQL_DB_HOST} -u ${MYSQL_USER} -p${MYSQL_USER_PASSWORD} -e 'show databases;'; do echo waiting for mydb; sleep 2; done"
+          env:
+            - name: MYSQL_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_DB_HOST
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_USER
+            - name: MYSQL_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_USER_PASSWORD
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      # ─── App Container: runs import.sh after init completes ───
+      containers:
+        - name: data-script
+          image: kim081890/quotes-data-script:v2
+          env:
+            - name: MYSQL_DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_DB_HOST
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_USER
+            - name: MYSQL_USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: quotes-secret
+                  key: MYSQL_USER_PASSWORD
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "100m"
+              memory: "128Mi"
+      restartPolicy: Always
