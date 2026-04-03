@@ -6,9 +6,10 @@ from sqlalchemy import exc
 import json
 from random import randint
 from flask import request
+import os
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@data:3306/mydatabase'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['SQLALCHEMY_DATABASE_URI']
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 
