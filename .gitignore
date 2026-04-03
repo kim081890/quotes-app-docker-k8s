@@ -221,3 +221,19 @@ Thumbs.db
 # Env files with real secrets
 .env
 .env.production
+
+# Docker
+docker-compose-override.yml
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Env files with real secrets
+.env
+.env.production
